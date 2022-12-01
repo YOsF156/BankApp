@@ -4,6 +4,8 @@ import { MainClientContent } from './MainClientContent';
 import { findAccount } from './Utils';
 import { TransferPage } from './TransferPage';
 import { BudgetApp } from './BudgetApp';
+import { MainContent } from './MainContent';
+import ExchangeRates from './ExchangeRates';
 
 export const ClientDashboard = (props) => {
     const { logout, client, setClient } = props;
@@ -43,5 +45,16 @@ export const ClientDashboard = (props) => {
           <TransferPage isClient="true" client={client} setClient={setClient} users={users} setUsers={setUsers}  />
         </main>
       )
+    }
+
+    if(page === 'exchange-rates') {
+      return (
+        <main>
+          <Sidebar changePage={changePageHandler} page={page} user={client} logoutHandler={props.logout} />
+          <ExchangeRates  client={client}   />
+        </main>
+      )
+      
+      
     }
 }

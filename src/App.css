@@ -243,6 +243,19 @@ label {
   border: 1px solid var(--text-color);
 }
 
+.currencyInput{
+
+  font-family: var(--font-family);
+  outline: none;
+  width: 100%;
+  font-size: 1.4rem;
+  padding: .3rem .5rem;
+  margin: 20px;
+  border-radius: 10px;
+  border: 2px solid gray;
+  background-color: linen;
+}
+
 .btn, .btn2 {
   background-color: var(--secondary-text-color);
   color: white;

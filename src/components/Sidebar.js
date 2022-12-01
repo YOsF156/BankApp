@@ -31,6 +31,7 @@ export const ClientMenu = (props) => {
             <SideLink onClickHandler={changePage} active={page} page="home" icon="bx bx-home" text="Home" />
             <SideLink onClickHandler={changePage} active={page} page="budget" icon="bx bx-money" text="Budget App" />
             <SideLink onClickHandler={changePage} active={page} page="transfer" icon="bx bx-transfer" text="Fund Transfer" />
+            <SideLink onClickHandler={changePage} active={page} page="exchange-rates" icon="bx bx-transfer" text="exchange rates" />
             <SideLink onClickHandler={logoutHandler} active={page} icon="bx bx-log-out" text="Logout" />
         </ul>
     )
