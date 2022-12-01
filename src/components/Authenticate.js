@@ -1,26 +1,39 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import DATA from "../data";
 import { Dashboard } from "./Dashboard";
 import { LoginPage } from "./LoginPage";
 import { ClientDashboard } from "./ClientDashboard";
 import axios from "axios";
+import { URL } from "./try";
 
 export const Authenticate = (props) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [notif, setNotif] = useState({ message: "", style: "" });
   const [isAdmin, setIsAdmin] = useState(false);
   const [client, setClient] = useState(null);
-  const localUsers = localStorage.getItem("users");
-  const clients = JSON.parse(localStorage.getItem("users"));
+  const [users, setUsers] = useState("")
+  // const localUsers = localStorage.getItem("users");
+  // const clients = JSON.parse(localStorage.getItem("users"));
 
-  if (!localUsers) {
-    localStorage.setItem("users", JSON.stringify(DATA));
+
+  const getAllUsersData = async () => {
+    localStorage.clear();
+    try {
+
+      const res = await axios.get(URL + "user")
+
+      localStorage.setItem("users", JSON.stringify(res.data));
+
+      setUsers(res.data)
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   const isLoginSuccess = async (email, password) => {
     try {
       let isFound;
-      const res = await axios.post("http://localhost:5000/api/user/login", {
+      const res = await axios.post(URL + "user/login", {
         email,
         password,
       });
@@ -28,9 +41,8 @@ export const Authenticate = (props) => {
       if (res.name === "AxiosError") throw res;
 
       const userDetails = await axios.get(
-        `http://localhost:5000/api/user/details/${res.data.userId}`
+        URL + `user/details/${res.data.userId}`
       );
-      console.log(userDetails.data);
 
       if (userDetails.isAdmin) {
         setIsAdmin(true);
@@ -43,35 +55,34 @@ export const Authenticate = (props) => {
       }
       setNotif("");
       setIsLoggedIn(true);
+      getAllUsersData()
       return isFound;
     } catch (error) {
       console.log({ error });
-      setNotif({ message: error.response.data.error.message, style: "danger" });
+      setNotif({ message: error.response.data?.error?.message, style: "danger" });
       return false;
     }
   };
 
-  const login = (username, password) => {
-    isLoginSuccess(username, password);
-  };
+
 
   const logout = () => {
     setIsLoggedIn(false);
     setIsAdmin(false);
     localStorage.removeItem("client");
+    localStorage.removeItem("users");
     setNotif({ message: "You have logged out.", style: "success" });
   };
 
   if (isLoggedIn) {
-    console.log(client);
     localStorage.setItem("currentUser", JSON.stringify(client));
     if (isAdmin) {
-      return <Dashboard users={clients} logoutHandler={logout} />;
+      return <Dashboard users={users} logoutHandler={logout} />;
     } else {
       return (
         <ClientDashboard
           client={client}
-          users={clients}
+          users={users}
           setClient={setClient}
           logout={logout}
         />
@@ -81,7 +92,7 @@ export const Authenticate = (props) => {
     return (
       <LoginPage
         users={props.users}
-        loginHandler={login}
+        loginHandler={isLoginSuccess}
         notif={notif}
         isLoggedIn={isLoggedIn}
       />

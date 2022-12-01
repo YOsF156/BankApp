@@ -1,11 +1,11 @@
 import { formatNumber, saveBudgetToDB } from "./Utils";
-import React, {useState} from "react";
+import React, { useState } from "react";
 
 export const BudgetApp = (props) => {
-    const {client} = props;
+    const { client } = props;
     const [budgetList, setBudgetList] = useState(client.budget || []);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalValue, setModalValue] = useState({title: '', amount: ''});
+    const [modalValue, setModalValue] = useState({ title: '', amount: '' });
     const [modalAction, setModalAction] = useState('add');
 
     const getTotalExpenses = () => {
@@ -15,39 +15,41 @@ export const BudgetApp = (props) => {
     }
 
     const totalExpenses = getTotalExpenses();
-    
+
     const [currentBalance, setCurrentBalance] = useState(client.balance - totalExpenses);
 
     const addBudget = (e) => {
         e.preventDefault();
-        setModalValue({title: '', amount: ''});
+        setModalValue({ title: '', amount: '' });
         setModalAction('add');
         setIsModalOpen(true);
     }
 
     const saveBudget = (amount, title) => {
         amount = parseFloat(amount);
-        if(amount > 0) {
+        if (amount > 0) {
             // deduct current balance
             setCurrentBalance(currentBalance - amount);
             // add this budget to budgetList
-            const newBudgetList = [{title: title, amount: amount}, ...budgetList];
+            const newBudgetList = [{ title: title, amount: amount }, ...budgetList];
             setBudgetList(newBudgetList);
             // close
             setIsModalOpen(false);
             // save into localStorage this new budget
-            saveBudgetToDB(client.number, newBudgetList);
+            saveBudgetToDB(client, newBudgetList);
         }
     }
 
-    const updateBudget = ({id, amount, title}) => {
-        const budget = budgetList[id];
-        budget.title = title;
-        budget.amount = amount;
-
-        setBudgetList(budgetList);
-        saveBudgetToDB(client.number, budgetList);
-        const total = getTotalExpenses(budgetList);
+    const updateBudget = async ({ id, amount, title }) => {
+        const newBudget = budgetList[id];
+        newBudget.title = title;
+        newBudget.amount = amount;
+        let newBudgetList = budgetList.map((budget, i) => {
+            return i === id ? newBudget : budget;
+        })
+        setBudgetList(newBudgetList);
+        await saveBudgetToDB(client, newBudgetList);
+        const total = getTotalExpenses(newBudgetList);
         // compute total balance
         setCurrentBalance(client.balance - total);
         setIsModalOpen(false);
@@ -65,22 +67,22 @@ export const BudgetApp = (props) => {
     const deleteRow = (index) => {
         // get all budgetlist except the index
         const filteredBudget = budgetList.filter((item, budgetIndex) => {
-            return  index !== budgetIndex;
+            return index !== budgetIndex;
         })
 
         setCurrentBalance(currentBalance + budgetList[index].amount);
         setBudgetList(filteredBudget);
-        saveBudgetToDB(client.number, filteredBudget);
+        saveBudgetToDB(client, filteredBudget);
     }
 
-    const modal = isModalOpen ? <BudgetModal 
-                  title={modalValue.title}
-                  id={modalValue.id}
-                  amount={modalValue.amount}
-                  modalAction={modalAction} 
-                  setIsModalOpen={setIsModalOpen}
-                  saveBudget={saveBudget} 
-                  updateBudget={updateBudget} /> : '';
+    const modal = isModalOpen ? <BudgetModal
+        title={modalValue.title}
+        id={modalValue.id}
+        amount={modalValue.amount}
+        modalAction={modalAction}
+        setIsModalOpen={setIsModalOpen}
+        saveBudget={saveBudget}
+        updateBudget={updateBudget} /> : '';
 
 
     const budget = budgetList.map((item, index) => {
@@ -109,8 +111,8 @@ export const BudgetApp = (props) => {
                             <button className="btn2" onClick={addBudget}><i className='bx bx-book-add'></i> Add budget</button>
                         </div>
                         <div>
-                          <label>Remaining Budget</label>
-                          <h1 className={ currentBalance < 0 ? 'danger' : '' }>{formatNumber(currentBalance)}</h1>
+                            <label>Remaining Budget</label>
+                            <h1 className={currentBalance < 0 ? 'danger' : ''}>{formatNumber(currentBalance)}</h1>
                         </div>
                     </div>
 
@@ -125,30 +127,30 @@ export const BudgetApp = (props) => {
 }
 
 const BudgetModal = (props) => {
-    const { saveBudget, updateBudget, setIsModalOpen, title, amount, modalAction, id} = props;
-    const [modalValue, setModalValue] = useState({id: id, title: title, amount: amount });
+    const { saveBudget, updateBudget, setIsModalOpen, title, amount, modalAction, id } = props;
+    const [modalValue, setModalValue] = useState({ id: id, title: title, amount: amount });
     // add or edit?
     const [action, setAction] = useState(modalAction);
 
     const onSubmit = (e) => {
         e.preventDefault();
 
-        if(action === 'add') {
+        if (action === 'add') {
             saveBudget(modalValue.amount, modalValue.title);
         }
 
-        if(action === 'edit') {
+        if (action === 'edit') {
             updateBudget(modalValue);
 
         }
     }
 
     const onChangeDescription = (e) => {
-        setModalValue({...modalValue, title: e.target.value});
+        setModalValue({ ...modalValue, title: e.target.value });
     }
 
     const onChangeAmount = (e) => {
-        setModalValue({...modalValue, amount: parseFloat(e.target.value)});
+        setModalValue({ ...modalValue, amount: parseFloat(e.target.value) });
     }
 
     return (<div className="overlay">

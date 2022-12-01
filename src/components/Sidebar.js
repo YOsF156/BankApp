@@ -6,16 +6,16 @@ export const Sidebar = (props) => {
     let menu = null;
 
     // not regular user but an admin
-    if(!user) {
+    if (user.isAdmin) {
         menu = <SideMenu changePage={changePage} page={page} logoutHandler={logoutHandler} />;
     }
 
     // regular user
-    if(user) {
+    if (!user.isAdmin) {
         menu = <ClientMenu changePage={changePage} page={page} logoutHandler={logoutHandler} />
     }
 
-    return(
+    return (
         <section id="side-menu">
             <Logo />
             {menu}
@@ -24,7 +24,7 @@ export const Sidebar = (props) => {
 }
 
 export const ClientMenu = (props) => {
-    const {changePage, logoutHandler, page} = props;
+    const { changePage, logoutHandler, page } = props;
 
     return (
         <ul>
@@ -36,9 +36,9 @@ export const ClientMenu = (props) => {
         </ul>
     )
 }
-  
+
 export const SideMenu = (props) => {
-    const {changePage, logoutHandler, page} = props;
+    const { changePage, logoutHandler, page } = props;
     return (
         <ul>
             <SideLink onClickHandler={changePage} active={page} page="home" icon="bx bx-home" text="Home" />
@@ -50,12 +50,12 @@ export const SideMenu = (props) => {
         </ul>
     )
 }
-  
+
 export const SideLink = (props) => {
-    const {icon, text, page, active} = props;
-    
+    const { icon, text, page, active } = props;
+
     function clickLink(event) {
-        if(page) {
+        if (page) {
             event.preventDefault();
             props.onClickHandler(page);
         } else {
@@ -65,6 +65,6 @@ export const SideLink = (props) => {
     }
 
     return (
-        <li><a onClick={clickLink} className={ active === page ? 'active' : '' } href="#"><i className={icon} ></i> {text}</a></li>
+        <li><a onClick={clickLink} className={active === page ? 'active' : ''} href="#"><i className={icon} ></i> {text}</a></li>
     )
 }
